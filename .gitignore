@@ -1,1 +1,7 @@
 framebuffer.tga
+
+*.out
+
+.vscode/
+
+profile_report.txt
