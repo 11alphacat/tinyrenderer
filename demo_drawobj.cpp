@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstdio>
+#include <cstdlib>
 
 static constexpr TGAColor white   = {255, 255, 255, 255}; // attention, BGRA order
 static constexpr TGAColor green   = {  0, 255,   0, 255};
@@ -195,6 +196,7 @@ static int ConstructMeshFromFile(const std::string &filename, drawobj::MeshData 
     return ok;
 }
 
+extern void triangle(int ax, int ay, int bx, int by, int cx, int cy, TGAImage &framebuffer, TGAColor color);
 static void DrawMesh(const drawobj::MeshData &mesh, TGAImage &framebuffer) {
     const int halfwidth  = framebuffer.width() >> 1;
     const int halfheight = framebuffer.height() >> 1;
@@ -206,9 +208,15 @@ static void DrawMesh(const drawobj::MeshData &mesh, TGAImage &framebuffer) {
         int cx = mesh.vertices[mesh.indicesv[i+2]-1].x * halfwidth + halfwidth;
         int cy = mesh.vertices[mesh.indicesv[i+2]-1].y * halfheight + halfheight;
 
-        Line(ax, ay, bx, by, framebuffer, red);
-        Line(bx, by, cx, cy, framebuffer, red);
-        Line(cx, cy, ax, ay, framebuffer, red);
+        // Line(ax, ay, bx, by, framebuffer, red);
+        // Line(bx, by, cx, cy, framebuffer, red);
+        // Line(cx, cy, ax, ay, framebuffer, red);
+        triangle(ax, ay, bx, by, cx, cy, framebuffer, {
+            static_cast<uint8_t>(std::rand()%256), 
+            static_cast<uint8_t>(std::rand()%256), 
+            static_cast<uint8_t>(std::rand()%256), 
+            255}
+        );
     }
     return;
 }
