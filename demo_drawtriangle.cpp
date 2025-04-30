@@ -81,50 +81,41 @@ static float signed_area(int ax, int ay, int bx, int by, int cx, int cy) {
     return .5* ( (bx-ax)*(cy-ay) - (by-ay)*(cx-ax) );
 }
 
-void triangle(int ax, int ay, int bx, int by, int cx, int cy, TGAImage &framebuffer, TGAColor color) {
-    // if (signed_area(ax, ay, bx, by, cx, cy) <1) {
-    //     return; // backface culling + discarding triangles that cover less than a pixel
-    // }
+void triangle(int ax, int ay, int az, int bx, int by, int bz, int cx, int cy, int cz, TGAImage &zbuffer, TGAImage &framebuffer, TGAColor color) {
+    int bbminx = std::min(std::min(ax, bx), cx); // bounding box for the triangle
+    int bbminy = std::min(std::min(ay, by), cy); // defined by its top left and bottom right corners
+    int bbmaxx = std::max(std::max(ax, bx), cx);
+    int bbmaxy = std::max(std::max(ay, by), cy);
+    double total_area = signed_area(ax, ay, bx, by, cx, cy);
+    // if (total_area<1) return; // backface culling + discarding triangles that cover less than a pixel
 
-    using Vector = drawtriangle::Vector;
-    using drawtriangle::isLeftRightLH;
+#pragma omp parallel for
+    for (int x=bbminx; x!=bbmaxx; ++x) {
+        for (int y=bbminy; y!=bbmaxy; ++y) {
+            double alpha = signed_area(x, y, bx, by, cx, cy) / total_area;
+            double beta  = signed_area(x, y, cx, cy, ax, ay) / total_area;
+            double gamma = signed_area(x, y, ax, ay, bx, by) / total_area;
+            if (alpha<0 || beta<0 || gamma<0) continue; // negative barycentric coordinate => the pixel is outside the triangle
+            unsigned char z = static_cast<unsigned char>(alpha * az + beta * bz + gamma * cz);
 
-    int bottomy = std::min(ay, std::min(by,cy)), upy = std::max(ay, std::max(by,cy));
-    int leftx = std::min(ax, std::min(bx,cx)), rightx = std::max(ax, std::max(bx,cx));
-    
-#ifdef DEBUG
-std::cout << "leftx: " << leftx << " rightx: " << rightx << std::endl;
-std::cout << "bottomy: " << bottomy << " upy: " << upy << std::endl;
-#endif
-    
-    Vector AB(bx-ax, by-ay, 0), BC(cx-bx, cy-by, 0), CA(ax-cx, ay-cy, 0);
-
-    Vector AP,BP,CP;
-    for ( int py = bottomy; py != upy; ++py) {
-        for ( int px = leftx; px != rightx; ++px) {
-            AP = {px-ax, py-ay, 0};
-            BP = {px-bx, py-by, 0};
-            CP = {px-cx, py-cy, 0};
-            
-            if ( isLeftRightLH(AB,AP) == isLeftRightLH(BC,BP) &&
-                 isLeftRightLH(BC,BP) == isLeftRightLH(CA,CP)) 
-            {
-                framebuffer.set(px, py, color);
+            // depth test
+            if (z < zbuffer.get(x, y)[0]) { // it seems that .obj file is in right hand coordinate system
+                continue; 
             }
+            zbuffer.set(x, y, {z});
+            framebuffer.set(x, y, color);
         }
     }
-    
-    line(ax, ay, bx, by, framebuffer, color);
-    line(bx, by, cx, cy, framebuffer, color);
-    line(cx, cy, ax, ay, framebuffer, color);
+
+    return;
 }
 
-int main(int argc, char** argv) {
-    TGAImage framebuffer(width, height, TGAImage::RGB);
-    triangle(  7, 45, 35, 100, 45,  60, framebuffer, red);
-    triangle(120, 35, 90,   5, 45, 110, framebuffer, white);
-    triangle(115, 83, 80,  90, 85, 120, framebuffer, green);
-    framebuffer.write_tga_file("framebuffer.tga");
-    return 0;
-}
+// int main(int argc, char** argv) {
+//     TGAImage framebuffer(width, height, TGAImage::RGB);
+//     triangle(  7, 45, 35, 100, 45,  60, framebuffer, red);
+//     triangle(120, 35, 90,   5, 45, 110, framebuffer, white);
+//     triangle(115, 83, 80,  90, 85, 120, framebuffer, green);
+//     framebuffer.write_tga_file("framebuffer.tga");
+//     return 0;
+// }
 

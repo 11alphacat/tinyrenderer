@@ -196,22 +196,27 @@ static int ConstructMeshFromFile(const std::string &filename, drawobj::MeshData 
     return ok;
 }
 
-extern void triangle(int ax, int ay, int bx, int by, int cx, int cy, TGAImage &framebuffer, TGAColor color);
-static void DrawMesh(const drawobj::MeshData &mesh, TGAImage &framebuffer) {
-    const int halfwidth  = framebuffer.width() >> 1;
-    const int halfheight = framebuffer.height() >> 1;
+extern void triangle(int ax, int ay, int az, int bx, int by, int bz, int cx, int cy, int cz, TGAImage &zbuffer, TGAImage &framebuffer, TGAColor color);
+static void DrawMesh(const drawobj::MeshData &mesh, TGAImage &zbuffer, TGAImage &framebuffer) {
+    const int width  = framebuffer.width();
+    const int height = framebuffer.height();
     for (size_t i = 0; i < mesh.indicesv.size(); i += 3) {
-        int ax = mesh.vertices[mesh.indicesv[i]-1].x * halfwidth + halfwidth;
-        int ay = mesh.vertices[mesh.indicesv[i]-1].y * halfheight + halfheight; 
-        int bx = mesh.vertices[mesh.indicesv[i+1]-1].x * halfwidth + halfwidth;
-        int by = mesh.vertices[mesh.indicesv[i+1]-1].y * halfheight + halfheight;
-        int cx = mesh.vertices[mesh.indicesv[i+2]-1].x * halfwidth + halfwidth;
-        int cy = mesh.vertices[mesh.indicesv[i+2]-1].y * halfheight + halfheight;
+        int ax = (mesh.vertices[mesh.indicesv[i]-1].x + 1.) * width / 2;
+        int ay = (mesh.vertices[mesh.indicesv[i]-1].y + 1.) * height / 2; 
+        int az = (mesh.vertices[mesh.indicesv[i]-1].z + 1.) * 255. / 2; 
+
+        int bx = (mesh.vertices[mesh.indicesv[i+1]-1].x + 1.) * width / 2;
+        int by = (mesh.vertices[mesh.indicesv[i+1]-1].y + 1.) * height / 2;
+        int bz = (mesh.vertices[mesh.indicesv[i+1]-1].z + 1.) * 255. / 2; 
+
+        int cx = (mesh.vertices[mesh.indicesv[i+2]-1].x + 1.) * width / 2;
+        int cy = (mesh.vertices[mesh.indicesv[i+2]-1].y + 1.) * height / 2;
+        int cz = (mesh.vertices[mesh.indicesv[i+2]-1].z + 1.) * 255. / 2; 
 
         // Line(ax, ay, bx, by, framebuffer, red);
         // Line(bx, by, cx, cy, framebuffer, red);
         // Line(cx, cy, ax, ay, framebuffer, red);
-        triangle(ax, ay, bx, by, cx, cy, framebuffer, {
+        triangle(ax, ay, az, bx, by, bz, cx, cy, cz, zbuffer, framebuffer, {
             static_cast<uint8_t>(std::rand()%256), 
             static_cast<uint8_t>(std::rand()%256), 
             static_cast<uint8_t>(std::rand()%256), 
@@ -222,8 +227,8 @@ static void DrawMesh(const drawobj::MeshData &mesh, TGAImage &framebuffer) {
 }
 
 int main() {
-    // const std::string filename("./obj/diablo3_pose/diablo3_pose.obj");
-    const std::string filename("./obj/african_head/african_head.obj");
+    const std::string filename("./obj/diablo3_pose/diablo3_pose.obj");
+    // const std::string filename("./obj/african_head/african_head.obj");
     drawobj::MeshData meshDiablo;
     if (!ConstructMeshFromFile(filename, meshDiablo) ) {
         std::cerr << "Failed to load mesh!" << std::endl;
@@ -234,8 +239,9 @@ int main() {
     constexpr int height = 1024;
 
     TGAImage framebuffer(width, height, TGAImage::RGB);
+    TGAImage zbuffer(width, height, TGAImage::GRAYSCALE);   // all zero
 
-    DrawMesh(meshDiablo, framebuffer);
+    DrawMesh(meshDiablo, zbuffer, framebuffer);
 
     framebuffer.write_tga_file("framebuffer.tga");
 
