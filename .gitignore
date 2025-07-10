@@ -1,7 +1,18 @@
-framebuffer.tga
+# Ignore build directory
+build/
 
-*.out
+# Ignore generated executable
+tinyrenderer
 
+# Ignore CMake cache files
+CMakeCache.txt
+CMakeFiles/
+
+# Ignore other temporary files
+*.cmake
+*.o
+*.obj
+*.log
+
+# vscode
 .vscode/
-
-profile_report.txt
