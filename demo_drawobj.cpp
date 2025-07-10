@@ -226,9 +226,15 @@ static void DrawMesh(const drawobj::MeshData &mesh, TGAImage &zbuffer, TGAImage 
     return;
 }
 
-int main() {
-    const std::string filename("./obj/diablo3_pose/diablo3_pose.obj");
-    // const std::string filename("./obj/african_head/african_head.obj");
+int main(int argc, char** argv) {
+    if (argc != 2) {
+        std::cerr << "Usage: " << argv[0] << "obj/model.obj" << std::endl;
+        return 1;
+    }
+    
+    // const std::string filename("./obj/diablo3_pose/diablo3_pose.obj");
+    const std::string filename(argv[1]);
+    
     drawobj::MeshData meshDiablo;
     if (!ConstructMeshFromFile(filename, meshDiablo) ) {
         std::cerr << "Failed to load mesh!" << std::endl;
