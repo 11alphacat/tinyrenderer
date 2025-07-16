@@ -23,10 +23,11 @@ endif()
 
 find_package(OpenMP COMPONENTS CXX)
 
-set(SOURCES demo_drawobj.cpp demo_drawtriangle.cpp model.cpp tgaimage.cpp)
+set(SOURCES main.cpp object.cpp mesh.cpp common.cpp tgaimage.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 target_link_libraries(${PROJECT_NAME} PRIVATE $<$<BOOL:${OpenMP_CXX_FOUND}>:OpenMP::OpenMP_CXX>)
 # target_compile_options(${PROJECT_NAME} PRIVATE -DDEBUG) # add compile define for debugging
+# target_compile_options(${PROJECT_NAME} PRIVATE -DWIREFRAME) # add compile define for WIREFRAME RENDERING
 
 file(GENERATE OUTPUT .gitignore CONTENT "*")

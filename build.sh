@@ -15,4 +15,5 @@ cmake --build .
 
 # Run the executable (optional)
 cd ..
-./tinyrenderer obj/diablo3_pose/diablo3_pose.obj
+# ./tinyrenderer obj/diablo3_pose/diablo3_pose.obj
+./tinyrenderer obj/african_head/african_head.obj
