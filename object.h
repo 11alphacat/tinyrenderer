@@ -2,6 +2,7 @@
 
 #include "mesh.h"
 #include "tgaimage.h"
+
 class Object {
     std::vector<Submesh> vSubmeshList {};
 

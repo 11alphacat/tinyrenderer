@@ -11,8 +11,10 @@ CMakeFiles/
 # Ignore other temporary files
 *.cmake
 *.o
+*.out
 *.obj
 *.log
+test.cpp
 
 # vscode
 .vscode/

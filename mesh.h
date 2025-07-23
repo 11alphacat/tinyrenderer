@@ -2,14 +2,13 @@
 
 #include <vector>
 #include <string>
-#include "common.h"
-
+#include "XMath.h"
 struct Submesh {
     std::string sFilename {};
 
-    std::vector<comGL::vec3> vertices;
-    std::vector<comGL::vec3> textures;
-    std::vector<comGL::vec3> normals;
+    std::vector<X::XMFLOAT4> vertices;
+    std::vector<X::XMFLOAT4> textures;
+    std::vector<X::XMFLOAT4> normals;
     std::vector<uint> indicesv;
     std::vector<uint> indicest;
     std::vector<uint> indicesn;
