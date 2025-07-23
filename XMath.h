@@ -1,6 +1,6 @@
 #pragma once
 
-#define _XM_NO_INTRINSICS_
+// #define _XM_NO_INTRINSICS_
 
 #include "DirectXMath/Inc/DirectXMath.h" 
 
@@ -10,7 +10,7 @@ namespace X = DirectX;
 
 namespace GL 
 {
-    inline void line(X::XMFLOAT4 from, X::XMFLOAT4 to, TGAImage &framebuffer, const TGAColor& color) {
+    inline void line(const X::XMFLOAT4& from, const X::XMFLOAT4& to, TGAImage &framebuffer, const TGAColor& color) {
         int ax { static_cast<int>(from.x) },    ay { static_cast<int>(from.y) };
         int bx { static_cast<int>(to.x) },      by { static_cast<int>(to.y) };
         bool steep { false };  
@@ -62,40 +62,48 @@ namespace GL
     }
     
     inline float signed_area(int ax, int ay, int bx, int by, int cx, int cy) {
-        return .5* ( (bx-ax)*(cy-ay) - (by-ay)*(cx-ax) );
+        // return .5* ( (bx-ax)*(cy-ay) - (by-ay)*(cx-ax) );
+        int bx_minus_ax { bx - ax };
+        int cy_minus_ay { cy - ay };
+        int by_minus_ay { by - ay };
+        int cx_minux_ax { cx - ax };
+        int _1 { bx_minus_ax * cy_minus_ay }, _2 { by_minus_ay * cx_minux_ax };
+        return ( ( _1 - _2 ) >> 1 );
     }
     
-    // inline void triangle(vec3 a, vec3 b, vec3 c, TGAImage &zbuffer, TGAImage &framebuffer, TGAColor color) {
-    //     int ax { static_cast<int>(a.x) }, ay { static_cast<int>(a.y) }, az { static_cast<int>(a.z) };
-    //     int bx { static_cast<int>(b.x) }, by { static_cast<int>(b.y) }, bz { static_cast<int>(b.z) };
-    //     int cx { static_cast<int>(c.x) }, cy { static_cast<int>(c.y) }, cz { static_cast<int>(c.z) };
+    inline void triangle(const X::XMFLOAT4& a, const X::XMFLOAT4& b, const X::XMFLOAT4& c, TGAImage &zbuffer, TGAImage &framebuffer, TGAColor color) {
+        int ax { static_cast<int>(a.x) }, ay { static_cast<int>(a.y) }, az { static_cast<int>(a.z) };
+        int bx { static_cast<int>(b.x) }, by { static_cast<int>(b.y) }, bz { static_cast<int>(b.z) };
+        int cx { static_cast<int>(c.x) }, cy { static_cast<int>(c.y) }, cz { static_cast<int>(c.z) };
     
-    //     int bbminx = std::min(std::min(ax, bx), cx); // bounding box for the triangle   
-    //     int bbminy = std::min(std::min(ay, by), cy); // defined by its top left and bottom right corners
-    //     int bbmaxx = std::max(std::max(ax, bx), cx);
-    //     int bbmaxy = std::max(std::max(ay, by), cy);
-    //     double total_area = signed_area(ax, ay, bx, by, cx, cy);
-    //     // if (total_area<1) return; // backface culling + discarding triangles that cover less than a pixel
+        int bbminx = std::min(std::min(ax, bx), cx); // bounding box for the triangle   
+        int bbminy = std::min(std::min(ay, by), cy); // defined by its top left and bottom right corners
+        int bbmaxx = std::max(std::max(ax, bx), cx);
+        int bbmaxy = std::max(std::max(ay, by), cy);
+        double total_area = signed_area(ax, ay, bx, by, cx, cy);
+        if (total_area<1) return; // backface culling + discarding triangles that cover less than a pixel
     
-    // #pragma omp parallel for
-    //     for (int x=bbminx; x!=bbmaxx; ++x) {
-    //         for (int y=bbminy; y!=bbmaxy; ++y) {
-    //             double alpha = signed_area(x, y, bx, by, cx, cy) / total_area;
-    //             double beta  = signed_area(x, y, cx, cy, ax, ay) / total_area;
-    //             double gamma = signed_area(x, y, ax, ay, bx, by) / total_area;
-    //             if (alpha<0 || beta<0 || gamma<0) continue; // negative barycentric coordinate => the pixel is outside the triangle
-    //             unsigned char z = static_cast<unsigned char>(alpha * az + beta * bz + gamma * cz);
+        // #pragma omp parallel for 
+        // can't use the above instruction !!! very slow!!
+        // zbuffer.set(x, y, {z}); framebuffer.set(x, y, color) ==> multi-thread race !!
+        for (int x=bbminx; x!=bbmaxx; ++x) {
+            for (int y=bbminy; y!=bbmaxy; ++y) {
+                double alpha = signed_area(x, y, bx, by, cx, cy) / total_area;
+                double beta  = signed_area(x, y, cx, cy, ax, ay) / total_area;
+                double gamma = signed_area(x, y, ax, ay, bx, by) / total_area;
+                if (alpha<0 || beta<0 || gamma<0) continue; // negative barycentric coordinate => the pixel is outside the triangle
+                unsigned char z = static_cast<unsigned char>(alpha * az + beta * bz + gamma * cz);
     
-    //             // depth test
-    //             if (z < zbuffer.get(x, y)[0]) { // it seems that .obj file is in right hand coordinate system
-    //                 continue; 
-    //             }
-    //             zbuffer.set(x, y, {z});
-    //             framebuffer.set(x, y, color);
-    //         }
-    //     }
+                // depth test
+                if (z < zbuffer.get(x, y)[0]) { // it seems that .obj file is in right hand coordinate system
+                    continue; 
+                }
+                zbuffer.set(x, y, {z});
+                framebuffer.set(x, y, color);
+            }
+        }
     
-    //     return;
-    // }
+        return;
+    }
     
 }; // namespace GL

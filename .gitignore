@@ -16,5 +16,8 @@ CMakeFiles/
 *.log
 test.cpp
 
+# Ignore performance analysis files
+*_out.txt
+
 # vscode
 .vscode/

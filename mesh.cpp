@@ -131,9 +131,10 @@ void Submesh::DrawSubmesh(TGAImage &framebuffer, TGAImage &zbuffer) const
         GL::line(vertices[indicesv[i]],vertices[indicesv[i+1]], framebuffer, red);
         GL::line(vertices[indicesv[i+1]],vertices[indicesv[i+2]], framebuffer, red);
         GL::line(vertices[indicesv[i+2]], vertices[indicesv[i]], framebuffer, red);
-        
+
 #else
-        comGL::triangle( 
+
+        GL::triangle( 
             vertices[indicesv[i]],
             vertices[indicesv[i+1]],
             vertices[indicesv[i+2]], 
@@ -144,8 +145,9 @@ void Submesh::DrawSubmesh(TGAImage &framebuffer, TGAImage &zbuffer) const
                 255 
             }
         );
-
 #endif
+
+// std::cout << i << '\n';
     } // for loop
     
     return;

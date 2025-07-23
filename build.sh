@@ -10,8 +10,11 @@ cd build
 # Run CMake configuration
 cmake .. -DCMAKE_BUILD_TYPE=Release
 
+# cmake .. -DCMAKE_BUILD_TYPE=Profile
+
 # Build the project
-cmake --build .
+# cmake --build .
+make -j$(nproc)
 
 # Run the executable (optional)
 cd ..

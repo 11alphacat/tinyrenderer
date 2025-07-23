@@ -2,12 +2,13 @@
 
 #include "mesh.h"
 #include "tgaimage.h"
+#include "XMath.h"
 
 class Object {
     std::vector<Submesh> vSubmeshList {};
 
-    // todo
-    // comGL::Matrix transform = world * view * projection;
+    const int width { 1024 }, height { 1024 };
+
 public:
     bool Initialize(const std::vector<std::string> &vszFilenameList);
     // void Transform(const comGL::Matrix &transform) {
@@ -17,5 +18,5 @@ public:
     //     }
     // }
 
-    void Render(TGAImage &framebuffer, TGAImage &zbuffer) ;
+    void Render(TGAImage &framebuffer, TGAImage &zbuffer);
 };
