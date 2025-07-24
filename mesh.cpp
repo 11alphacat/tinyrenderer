@@ -133,7 +133,6 @@ void Submesh::DrawSubmesh(TGAImage &framebuffer, TGAImage &zbuffer) const
         GL::line(vertices[indicesv[i+2]], vertices[indicesv[i]], framebuffer, red);
 
 #else
-
         GL::triangle( 
             vertices[indicesv[i]],
             vertices[indicesv[i+1]],

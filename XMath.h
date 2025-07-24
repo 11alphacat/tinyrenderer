@@ -95,7 +95,7 @@ namespace GL
                 unsigned char z = static_cast<unsigned char>(alpha * az + beta * bz + gamma * cz);
     
                 // depth test
-                if (z < zbuffer.get(x, y)[0]) { // it seems that .obj file is in right hand coordinate system
+                if (z < zbuffer.get(x, y)[0]) { // it seems that .obj file is in RH coordinate system
                     continue; 
                 }
                 zbuffer.set(x, y, {z});
