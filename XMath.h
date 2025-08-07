@@ -62,7 +62,7 @@ namespace GL
     }
     
     inline float signed_area(int ax, int ay, int bx, int by, int cx, int cy) {
-        // return .5* ( (bx-ax)*(cy-ay) - (by-ay)*(cx-ax) );
+        // return .5* ( (bx-ax)*(cy-ay) - (by-ay)*(cx-ax) ); S▲ = AB × AC / 2
         int bx_minus_ax { bx - ax };
         int cy_minus_ay { cy - ay };
         int by_minus_ay { by - ay };
@@ -106,4 +106,49 @@ namespace GL
         return;
     }
     
+    inline void triangle3color(const X::XMFLOAT4& a, const X::XMFLOAT4& b, const X::XMFLOAT4& c, TGAImage &zbuffer, TGAImage &framebuffer, 
+        TGAColor colorA, TGAColor colorB, TGAColor colorC) {
+        int ax { static_cast<int>(a.x) }, ay { static_cast<int>(a.y) }, az { static_cast<int>(a.z) };
+        int bx { static_cast<int>(b.x) }, by { static_cast<int>(b.y) }, bz { static_cast<int>(b.z) };
+        int cx { static_cast<int>(c.x) }, cy { static_cast<int>(c.y) }, cz { static_cast<int>(c.z) };
+    
+        int bbminx = std::min(std::min(ax, bx), cx); // bounding box for the triangle   
+        int bbminy = std::min(std::min(ay, by), cy); // defined by its top left and bottom right corners
+        int bbmaxx = std::max(std::max(ax, bx), cx);
+        int bbmaxy = std::max(std::max(ay, by), cy);
+        double total_area = signed_area(ax, ay, bx, by, cx, cy);
+        if (total_area<1) return; // backface culling + discarding triangles that cover less than a pixel
+    
+        // #pragma omp parallel for 
+        // can't use the above instruction !!! very slow!!
+        // zbuffer.set(x, y, {z}); framebuffer.set(x, y, color) ==> multi-thread race !!
+        for (int x=bbminx; x!=bbmaxx; ++x) {
+            for (int y=bbminy; y!=bbmaxy; ++y) {
+                double alpha = signed_area(x, y, bx, by, cx, cy) / total_area;
+                double beta  = signed_area(x, y, cx, cy, ax, ay) / total_area;
+                double gamma = signed_area(x, y, ax, ay, bx, by) / total_area;
+                if (alpha<0 || beta<0 || gamma<0) continue; // negative barycentric coordinate => the pixel is outside the triangle
+                unsigned char z = static_cast<unsigned char>(alpha * az + beta * bz + gamma * cz);
+    
+                // depth test
+                if (z < zbuffer.get(x, y)[0]) { // it seems that .obj file is in RH coordinate system
+                    continue; 
+                }
+
+                zbuffer.set(x, y, {z});
+
+                TGAColor color = {
+                    static_cast<uint8_t>(alpha * colorA[0] + beta * colorB[0] + gamma * colorC[0]),
+                    static_cast<uint8_t>(alpha * colorA[1] + beta * colorB[1] + gamma * colorC[1]),
+                    static_cast<uint8_t>(alpha * colorA[2] + beta * colorB[2] + gamma * colorC[2]),
+                    255
+                };
+                
+                framebuffer.set(x, y, color);
+            }
+        }
+    
+        return;
+    }
+
 }; // namespace GL

@@ -24,6 +24,7 @@ struct TGAColor {
     std::uint8_t bgra[4] = {0,0,0,0};
     std::uint8_t bytespp = 4;
     std::uint8_t& operator[](const int i) { return bgra[i]; }
+    const std::uint8_t& operator[](const int i) const { return bgra[i]; }
 };
 
 struct TGAImage {

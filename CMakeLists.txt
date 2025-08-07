@@ -43,5 +43,6 @@ endif()
 
 # target_compile_options(${PROJECT_NAME} PRIVATE -DDEBUG) # add compile define for debugging
 # target_compile_options(${PROJECT_NAME} PRIVATE -DWIREFRAME) # add compile define for WIREFRAME RENDERING
+# target_compile_options(${PROJECT_NAME} PRIVATE -DNO_NORMAL_MAP) # add compile define for NOT USING NORMAL MAP
 
 file(GENERATE OUTPUT .gitignore CONTENT "*")

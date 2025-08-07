@@ -10,7 +10,7 @@ class Object {
     const int width { 1024 }, height { 1024 };
 
 public:
-    bool Initialize(const std::vector<std::string> &vszFilenameList);
+    bool Initialize(const std::vector<std::string> &vsFilenameList);
     // void Transform(const comGL::Matrix &transform) {
     //     // Apply transformation to all submeshes
     //     for (auto &submesh : vSubmeshList) {
